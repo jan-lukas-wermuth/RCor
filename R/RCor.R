@@ -24,6 +24,8 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
   if (!(is.numeric(X) && is.numeric(Y) && length(X) == length(Y))){
     stop("`X` and `Y` must be numeric vectors of the same length", call. = FALSE)
   }
+  X <- X
+  Y <- Y
   n <- length(X)
   if (method == "tau"){
     tau_info <- DescTools:::.DoCount(X, Y)
