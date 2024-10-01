@@ -187,6 +187,7 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
     Y_TieProb3 <- sum((table(Y)/length(Y))^3)
     if (isTRUE(IID)){
       # Define functions
+      G_XY <- Vectorize(function(x_val, y_val) (mean(X <= x_val & Y <= y_val) + mean(X <= x_val & Y < y_val) + mean(X < x_val & Y <= y_val) + mean(X < x_val & Y < y_val)) / 4)
       G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
       G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
       g_x <- Vectorize(function(x_val) mean(G_XY(x_val, Y)))
@@ -225,6 +226,7 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
     Y_TieProb <- sum((table(Y)/length(Y))^2)
     if (isTRUE(IID)){
       # Define functions
+      G_XY <- Vectorize(function(x_val, y_val) (mean(X <= x_val & Y <= y_val) + mean(X <= x_val & Y < y_val) + mean(X < x_val & Y <= y_val) + mean(X < x_val & Y < y_val)) / 4)
       G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
       G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
       F_X <- Vectorize(function(x_val) mean(X <= x_val))
@@ -510,6 +512,7 @@ SRho_LRV <- function(X, Y, spearman, bandwidth = "Dehling"){
   w <- pmax(1 - abs(h) / (b + 1), 0)
 
   # Define functions
+  G_XY <- Vectorize(function(x_val, y_val) (mean(X <= x_val & Y <= y_val) + mean(X <= x_val & Y < y_val) + mean(X < x_val & Y <= y_val) + mean(X < x_val & Y < y_val)) / 4)
   G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
   G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
   g_x <- Vectorize(function(x_val) mean(G_XY(x_val, Y)))
@@ -632,6 +635,7 @@ Rhob_LRV <- function(X, Y, spearman, spearman_X, spearman_Y, bandwidth = "Dehlin
   w <- pmax(1 - abs(h) / (b + 1), 0)
 
   # Define functions
+  G_XY <- Vectorize(function(x_val, y_val) (mean(X <= x_val & Y <= y_val) + mean(X <= x_val & Y < y_val) + mean(X < x_val & Y <= y_val) + mean(X < x_val & Y < y_val)) / 4)
   G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
   G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
   F_X <- Vectorize(function(x_val) mean(X <= x_val))
