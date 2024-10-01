@@ -24,8 +24,6 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
   if (!(is.numeric(X) && is.numeric(Y) && length(X) == length(Y))){
     stop("`X` and `Y` must be numeric vectors of the same length", call. = FALSE)
   }
-  X <- X
-  Y <- Y
   n <- length(X)
   if (method == "tau"){
     tau_info <- DescTools:::.DoCount(X, Y)
@@ -34,6 +32,11 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
     X_TieProb3 <- sum((table(X)/length(X))^3)
     Y_TieProb3 <- sum((table(Y)/length(Y))^3)
     if (isTRUE(IID)){
+      # Define functions
+      G_XY <- Vectorize(function(x_val, y_val) (mean(X <= x_val & Y <= y_val) + mean(X <= x_val & Y < y_val) + mean(X < x_val & Y <= y_val) + mean(X < x_val & Y < y_val)) / 4)
+      G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
+      G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
+
       # Calculate Marc's variance estimator
       var_hat <- 4 * mean((4 * G_XY(X, Y) - 2 * (G_X(X) + G_Y(Y)) + 1 - tau)^2)
       # Variance under independence assumption
@@ -65,6 +68,13 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
     X_TieProb3 <- sum((table(X)/length(X))^3)
     Y_TieProb3 <- sum((table(Y)/length(Y))^3)
     if (isTRUE(IID)){
+      # Define functions
+      G_XY <- Vectorize(function(x_val, y_val) (mean(X <= x_val & Y <= y_val) + mean(X <= x_val & Y < y_val) + mean(X < x_val & Y <= y_val) + mean(X < x_val & Y < y_val)) / 4)
+      G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
+      G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
+      x_eq <- Vectorize(function(x_val) mean(X == x_val))
+      y_eq <- Vectorize(function(y_val) mean(Y == y_val))
+
       # Calculate Marc's variance estimator
       G_XYXY <- G_XY(X, Y)
       G_XX <- G_X(X)
@@ -133,6 +143,13 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
     XY_TieProb <- sum((table(X, Y)/length(X))^2)
     tie_prob <- X_TieProb + Y_TieProb - XY_TieProb
     if (isTRUE(IID)){
+      # Define functions
+      G_XY <- Vectorize(function(x_val, y_val) (mean(X <= x_val & Y <= y_val) + mean(X <= x_val & Y < y_val) + mean(X < x_val & Y <= y_val) + mean(X < x_val & Y < y_val)) / 4)
+      G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
+      G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
+      x_eq <- Vectorize(function(x_val) mean(X == x_val))
+      y_eq <- Vectorize(function(y_val) mean(Y == y_val))
+      x_eq_y_eq <- Vectorize(function(x_val, y_val) mean(X == x_val & Y == y_val))
       # Calculate Marc's variance estimator
       G_XYXY <- G_XY(X, Y)
       G_XX <- G_X(X)
@@ -169,6 +186,12 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
     X_TieProb3 <- sum((table(X)/length(X))^3)
     Y_TieProb3 <- sum((table(Y)/length(Y))^3)
     if (isTRUE(IID)){
+      # Define functions
+      G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
+      G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
+      g_x <- Vectorize(function(x_val) mean(G_XY(x_val, Y)))
+      g_y <- Vectorize(function(y_val) mean(G_XY(X, y_val)))
+
       # Calculate Marc's variance estimator
       G_XX <- G_X(X)
       G_YY <- G_Y(Y)
@@ -201,6 +224,16 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
     X_TieProb <- sum((table(X)/length(X))^2)
     Y_TieProb <- sum((table(Y)/length(Y))^2)
     if (isTRUE(IID)){
+      # Define functions
+      G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
+      G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
+      F_X <- Vectorize(function(x_val) mean(X <= x_val))
+      F_X_ <- Vectorize(function(x_val) mean(X < x_val))
+      F_Y <- Vectorize(function(y_val) mean(Y <= y_val))
+      F_Y_ <- Vectorize(function(y_val) mean(Y < y_val))
+      g_x <- Vectorize(function(x_val) mean(G_XY(x_val, Y)))
+      g_y <- Vectorize(function(y_val) mean(G_XY(X, y_val)))
+
       # Calculate Marc's variance estimator
       g_xX <- g_x(X)
       g_yY <- g_y(Y)
@@ -210,6 +243,17 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
       F_X_X <- F_X_(X)
       F_YY <- F_Y(Y)
       F_Y_Y <- F_Y_(Y)
+
+      # Define functions
+      min1X <- Vectorize(function(x_val) mean(pmin(F_XX, F_X(x_val))))
+      min2X <- Vectorize(function(x_val) mean(pmin(F_XX, F_X_(x_val))))
+      min3X <- Vectorize(function(x_val) mean(pmin(F_X_X, F_X(x_val))))
+      min4X <- Vectorize(function(x_val) mean(pmin(F_X_X, F_X_(x_val))))
+      min1Y <- Vectorize(function(y_val) mean(pmin(F_YY, F_Y(y_val))))
+      min2Y <- Vectorize(function(y_val) mean(pmin(F_YY, F_Y_(y_val))))
+      min3Y <- Vectorize(function(y_val) mean(pmin(F_Y_Y, F_Y(y_val))))
+      min4Y <- Vectorize(function(y_val) mean(pmin(F_Y_Y, F_Y_(y_val))))
+
       # Calculate min functions
       min1XX <- min1X(X)
       min2XX <- min2X(X)
@@ -367,6 +411,11 @@ Tau_LRV <- function(X, Y, kendall, bandwidth = "Dehling"){
   h <- 1:(n-1)
   w <- pmax(1 - abs(h) / (b + 1), 0)
 
+  # Define functions
+  G_XY <- Vectorize(function(x_val, y_val) (mean(X <= x_val & Y <= y_val) + mean(X <= x_val & Y < y_val) + mean(X < x_val & Y <= y_val) + mean(X < x_val & Y < y_val)) / 4)
+  G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
+  G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
+
   # Define kernel realizations
   k_XY <- 4 * G_XY(X, Y) - 2 * (G_X(X) + G_Y(Y)) + 1 - kendall
 
@@ -460,6 +509,12 @@ SRho_LRV <- function(X, Y, spearman, bandwidth = "Dehling"){
   h <- 1:(n-1)
   w <- pmax(1 - abs(h) / (b + 1), 0)
 
+  # Define functions
+  G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
+  G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
+  g_x <- Vectorize(function(x_val) mean(G_XY(x_val, Y)))
+  g_y <- Vectorize(function(y_val) mean(G_XY(X, y_val)))
+
   # Define kernel realizations
   G_XX <- G_X(X)
   G_YY <- G_Y(Y)
@@ -487,6 +542,14 @@ Gamma_LRV <- function(X, Y, kendall, tie_prob, bandwidth = "Dehling"){
   # Calculate weights
   h <- 1:(n-1)
   w <- pmax(1 - abs(h) / (b + 1), 0)
+
+  # Define functions
+  G_XY <- Vectorize(function(x_val, y_val) (mean(X <= x_val & Y <= y_val) + mean(X <= x_val & Y < y_val) + mean(X < x_val & Y <= y_val) + mean(X < x_val & Y < y_val)) / 4)
+  G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
+  G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
+  x_eq <- Vectorize(function(x_val) mean(X == x_val))
+  y_eq <- Vectorize(function(y_val) mean(Y == y_val))
+  x_eq_y_eq <- Vectorize(function(x_val, y_val) mean(X == x_val & Y == y_val))
 
   # Define kernel realizations
   k_XY_tau <- 4 * G_XY(X, Y) - 2 * (G_X(X) + G_Y(Y)) + 1 - kendall
@@ -521,6 +584,13 @@ TauB_LRV <- function(X, Y, kendall, kendall_X, kendall_Y, bandwidth = "Dehling")
   # Calculate weights
   h <- 1:(n-1)
   w <- pmax(1 - abs(h) / (b + 1), 0)
+
+  # Define functions
+  G_XY <- Vectorize(function(x_val, y_val) (mean(X <= x_val & Y <= y_val) + mean(X <= x_val & Y < y_val) + mean(X < x_val & Y <= y_val) + mean(X < x_val & Y < y_val)) / 4)
+  G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
+  G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
+  x_eq <- Vectorize(function(x_val) mean(X == x_val))
+  y_eq <- Vectorize(function(y_val) mean(Y == y_val))
 
   # Define kernel realizations
   k_XY_tau <- 4 * G_XY(X, Y) - 2 * (G_X(X) + G_Y(Y)) + 1 - kendall
@@ -561,6 +631,24 @@ Rhob_LRV <- function(X, Y, spearman, spearman_X, spearman_Y, bandwidth = "Dehlin
   h <- 1:(n-1)
   w <- pmax(1 - abs(h) / (b + 1), 0)
 
+  # Define functions
+  G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
+  G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
+  F_X <- Vectorize(function(x_val) mean(X <= x_val))
+  F_X_ <- Vectorize(function(x_val) mean(X < x_val))
+  F_Y <- Vectorize(function(y_val) mean(Y <= y_val))
+  F_Y_ <- Vectorize(function(y_val) mean(Y < y_val))
+  g_x <- Vectorize(function(x_val) mean(G_XY(x_val, Y)))
+  g_y <- Vectorize(function(y_val) mean(G_XY(X, y_val)))
+  f_x1 <- Vectorize(function(x_val) mean(min(F_X(x_val), F_X(X))))
+  f_x2 <- Vectorize(function(x_val) mean(min(F_X_(x_val), F_X(X))))
+  f_x3 <- Vectorize(function(x_val) mean(min(F_X(x_val), F_X_(X))))
+  f_x4 <- Vectorize(function(x_val) mean(min(F_X_(x_val), F_X_(X))))
+  f_y1 <- Vectorize(function(y_val) mean(min(F_Y(y_val), F_Y(Y))))
+  f_y2 <- Vectorize(function(y_val) mean(min(F_Y_(y_val), F_Y(Y))))
+  f_y3 <- Vectorize(function(y_val) mean(min(F_Y(y_val), F_Y_(Y))))
+  f_y4 <- Vectorize(function(y_val) mean(min(F_Y_(y_val), F_Y_(Y))))
+
   # Define kernel realizations
   G_XX <- G_X(X)
   G_YY <- G_Y(Y)
@@ -588,61 +676,4 @@ Rhob_LRV <- function(X, Y, spearman, spearman_X, spearman_Y, bandwidth = "Dehlin
 
   return(Rhob_LRV)
 }
-
-#' @keywords internal
-G_XY <- Vectorize(function(x_val, y_val) (mean(X <= x_val & Y <= y_val) + mean(X <= x_val & Y < y_val) + mean(X < x_val & Y <= y_val) + mean(X < x_val & Y < y_val)) / 4)
-#' @keywords internal
-G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
-#' @keywords internal
-F_X <- Vectorize(function(x_val) mean(X <= x_val))
-#' @keywords internal
-F_X_ <- Vectorize(function(x_val) mean(X < x_val))
-#' @keywords internal
-G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
-#' @keywords internal
-F_Y <- Vectorize(function(y_val) mean(Y <= y_val))
-#' @keywords internal
-F_Y_ <- Vectorize(function(y_val) mean(Y < y_val))
-#' @keywords internal
-g_x <- Vectorize(function(x_val) mean(G_XY(x_val, Y)))
-#' @keywords internal
-g_y <- Vectorize(function(y_val) mean(G_XY(X, y_val)))
-#' @keywords internal
-f_x1 <- Vectorize(function(x_val) mean(min(F_X(x_val), F_X(X))))
-#' @keywords internal
-f_x2 <- Vectorize(function(x_val) mean(min(F_X_(x_val), F_X(X))))
-#' @keywords internal
-f_x3 <- Vectorize(function(x_val) mean(min(F_X(x_val), F_X_(X))))
-#' @keywords internal
-f_x4 <- Vectorize(function(x_val) mean(min(F_X_(x_val), F_X_(X))))
-#' @keywords internal
-f_y1 <- Vectorize(function(y_val) mean(min(F_Y(y_val), F_Y(Y))))
-#' @keywords internal
-f_y2 <- Vectorize(function(y_val) mean(min(F_Y_(y_val), F_Y(Y))))
-#' @keywords internal
-f_y3 <- Vectorize(function(y_val) mean(min(F_Y(y_val), F_Y_(Y))))
-#' @keywords internal
-f_y4 <- Vectorize(function(y_val) mean(min(F_Y_(y_val), F_Y_(Y))))
-#' @keywords internal
-x_eq <- Vectorize(function(x_val) mean(X == x_val))
-#' @keywords internal
-y_eq <- Vectorize(function(y_val) mean(Y == y_val))
-#' @keywords internal
-x_eq_y_eq <- Vectorize(function(x_val, y_val) mean(X == x_val & Y == y_val))
-#' @keywords internal
-min1X <- Vectorize(function(x_val) mean(pmin(F_XX, F_X(x_val))))
-#' @keywords internal
-min2X <- Vectorize(function(x_val) mean(pmin(F_XX, F_X_(x_val))))
-#' @keywords internal
-min3X <- Vectorize(function(x_val) mean(pmin(F_X_X, F_X(x_val))))
-#' @keywords internal
-min4X <- Vectorize(function(x_val) mean(pmin(F_X_X, F_X_(x_val))))
-#' @keywords internal
-min1Y <- Vectorize(function(y_val) mean(pmin(F_YY, F_Y(y_val))))
-#' @keywords internal
-min2Y <- Vectorize(function(y_val) mean(pmin(F_YY, F_Y_(y_val))))
-#' @keywords internal
-min3Y <- Vectorize(function(y_val) mean(pmin(F_Y_Y, F_Y(y_val))))
-#' @keywords internal
-min4Y <- Vectorize(function(y_val) mean(pmin(F_Y_Y, F_Y_(y_val))))
 
