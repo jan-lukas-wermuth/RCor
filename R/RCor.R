@@ -294,18 +294,16 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
   if (method == "r"){
     r <- stats::cor(X, Y)
     r_fis <- atanh(r)
-    mean_x <- mean(X)
-    mean_y <- mean(Y)
-    var_x <- stats::var(X)
-    var_y <- stats::var(Y)
+    X_std <- scale(X)
+    Y_std <- scale(Y)
     if (isTRUE(IID)){
-      C_XX_XX <- stats::var((X - mean_x)^2)
-      C_YY_YY <- stats::var((Y - mean_y)^2)
-      C_XX_YY <- stats::cov((X - mean_x)^2, (Y - mean_y)^2)
-      C_XX_XY <- stats::cov((X - mean_x)^2, (Y - mean_y) * (X - mean_x))
-      C_YY_XY <- stats::cov((Y - mean_y)^2, (Y - mean_y) * (X - mean_x))
+      m_40 <- mean(X_std^4)
+      m_04 <- mean(Y_std^4)
+      m_22 <- mean(X_std^2 * Y_std^2)
+      m_31 <- mean(X_std^3 * Y_std)
+      m_13 <- mean(X_std * Y_std^3)
       # Variance
-      var_hat <- C_XX_YY / var_x / var_y + r^2 / 4 * (C_XX_XX / var_x^2 + 2 * C_XX_YY / var_x / var_y + C_YY_YY / var_y) - r * (C_XX_XY / sqrt(var_x)^3 / sqrt(var_y) + C_YY_XY / sqrt(var_y)^3 / sqrt(var_x))
+      var_hat <- 0.25 * ((m_40 + 2*m_22 + m_04)*r^2 - 4*r*(m_31 + m_13) + 4*m_22)
       # Variance under independence assumption
       var_hat_ind <- 1
       p_val_ind <- stats::pnorm(-abs(sqrt(n) * r / sqrt(var_hat_ind)))
