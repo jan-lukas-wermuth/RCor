@@ -59,42 +59,54 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
     return(res)
   }
   if (method == "tau_b"){
-    tau_info <- DescTools:::.DoCount(X, Y)
-    tau <- (tau_info$C - tau_info$D) / choose(n, 2)
     tau_b <- stats::cor(X, Y, method = "kendall")
     tau_b_fis <- atanh(tau_b)
-    X_TieProb <- sum((table(X)/length(X))^2)
-    Y_TieProb <- sum((table(Y)/length(Y))^2)
-    X_TieProb3 <- sum((table(X)/length(X))^3)
-    Y_TieProb3 <- sum((table(Y)/length(Y))^3)
     if (isTRUE(IID)){
+      tau_info <- DescTools:::.DoCount(X, Y)
+      tau <- (tau_info$C - tau_info$D) / choose(n, 2)
+      taux_info <- DescTools:::.DoCount(X, X)
+      taux <- (taux_info$C - taux_info$D) / choose(n, 2)
+      tauy_info <- DescTools:::.DoCount(Y, Y)
+      tauy <- (tauy_info$C - tauy_info$D) / choose(n, 2)
+      X_TieProb <- sum((table(X)/length(X))^2)
+      Y_TieProb <- sum((table(Y)/length(Y))^2)
+      X_TieProb3 <- sum((table(X)/length(X))^3)
+      Y_TieProb3 <- sum((table(Y)/length(Y))^3)
       # Define functions
       G_XY <- Vectorize(function(x_val, y_val) (mean(X <= x_val & Y <= y_val) + mean(X <= x_val & Y < y_val) + mean(X < x_val & Y <= y_val) + mean(X < x_val & Y < y_val)) / 4)
       G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
       G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
-      x_eq <- Vectorize(function(x_val) mean(X == x_val))
-      y_eq <- Vectorize(function(y_val) mean(Y == y_val))
+      x_neq <- Vectorize(function(x_val) mean(X != x_val))
+      y_neq <- Vectorize(function(y_val) mean(Y != y_val))
 
       # Calculate Marc's variance estimator
       G_XYXY <- G_XY(X, Y)
       G_XX <- G_X(X)
       G_YY <- G_Y(Y)
-      x_eqX <- x_eq(X)
-      y_eqY <- y_eq(Y)
+      x_neqX <- x_neq(X)
+      y_neqY <- y_neq(Y)
       var_tau <- 4 * mean((4 * G_XYXY - 2 * (G_XX + G_YY) + 1 - tau)^2)
-      var_xix <- 4 * mean((x_eqX - X_TieProb)^2)
-      var_xiy <- 4 * mean((y_eqY - Y_TieProb)^2)
-      var_tauxix <- 4 * mean((4 * G_XYXY - 2 * (G_XX + G_YY) + 1 - tau) * (x_eqX - X_TieProb))
-      var_tauxiy <- 4 * mean((4 * G_XYXY - 2 * (G_XX + G_YY) + 1 - tau) * (y_eqY - Y_TieProb))
-      var_xixxiy <- 4 * mean((x_eqX - X_TieProb) * (y_eqY - Y_TieProb))
-      var_hat <- (var_tau + tau * (var_tauxix / (1 - X_TieProb) + var_tauxiy / (1 - Y_TieProb)) + tau^2 / 4 * (var_xix / (1 - X_TieProb)^2 + var_xiy / (1 - Y_TieProb)^2 + (2 * var_xixxiy) / (1 - Y_TieProb) / (1 - X_TieProb))) / ((1 - X_TieProb) * (1 - Y_TieProb))
+      var_taux <- 4 * mean((x_neqX - taux)^2)
+      var_tauy <- 4 * mean((y_neqY - tauy)^2)
+      var_tautaux <- 4 * mean((4 * G_XYXY - 2 * (G_XX + G_YY) + 1 - tau) * (x_neqX - taux))
+      var_tautauy <- 4 * mean((4 * G_XYXY - 2 * (G_XX + G_YY) + 1 - tau) * (y_neqY - tauy))
+      var_tauxtauy <- 4 * mean((x_neqX - taux) * (y_neqY - tauy))
+      var_hat <- (var_tau - tau * (var_tautaux / taux - var_tautauy / tauy) + tau^2 / 4 * (var_taux / taux^2 + var_tauy / tauy^2 + (2 * var_tauxtauy) / tauy / taux)) / (taux * tauy)
       # Variance under independence assumption
       var_hat_ind <- 4 / 9 * (1 - X_TieProb3) * (1 - Y_TieProb3) / (1 - X_TieProb) / (1 - Y_TieProb)
       p_val_ind <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat_ind)))
       p_val <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat)))
     } else if (isFALSE(IID)){
-      var_hat <- TauB_LRV(X, Y, tau, X_TieProb, Y_TieProb, bandwidth = "Dehling")
-      var_hat_ind <- 4 / 9 * (1 - X_TieProb3) * (1 - Y_TieProb3) / (1 - X_TieProb) / (1 - Y_TieProb) * Rhob_ind_LRV(X, Y, bandwidth = "Dehling")
+      tau_info <- DescTools:::.DoCount(X, Y)
+      tau <- (tau_info$C - tau_info$D) / choose(n, 2)
+      taux_info <- DescTools:::.DoCount(X, X)
+      taux <- (taux_info$C - taux_info$D) / choose(n, 2)
+      tauy_info <- DescTools:::.DoCount(Y, Y)
+      tauy <- (tauy_info$C - tauy_info$D) / choose(n, 2)
+      X_TieProb <- sum((table(X)/length(X))^2)
+      Y_TieProb <- sum((table(Y)/length(Y))^2)
+      var_hat <- TauB_LRV(X, Y, tau, taux, tauy, bandwidth = "Dehling")
+      var_hat_ind <- Tau_ind_LRV(X, Y, bandwidth = "Dehling") / (1 - X_TieProb) / (1 - Y_TieProb)
       p_val_ind <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat_ind)))
       p_val <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat)))
     } else stop("Please insert a valid option for the variable `IID`!", call. = FALSE)
@@ -167,7 +179,7 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
       p_val <- stats::pnorm(-abs(sqrt(n) * gamma / sqrt(var_hat)))
     } else if (isFALSE(IID)){
       var_hat <- Gamma_LRV(X, Y, tau, tie_prob, bandwidth = "Dehling")
-      var_hat_ind <- 4 / 9 * (1 - X_TieProb3) * (1 - Y_TieProb3) / (1 - X_TieProb)^2 / (1 - Y_TieProb)^2 * Rhob_ind_LRV(X, Y, bandwidth = "Dehling")
+      var_hat_ind <- Tau_ind_LRV(X, Y, bandwidth = "Dehling") / (1 - X_TieProb)^2 / (1 - Y_TieProb)^2
       p_val_ind <- stats::pnorm(-abs(sqrt(n) * gamma / sqrt(var_hat_ind)))
       p_val <- stats::pnorm(-abs(sqrt(n) * gamma / sqrt(var_hat)))
     } else stop("Please insert a valid option for the variable `IID`!", call. = FALSE)
@@ -590,13 +602,13 @@ TauB_LRV <- function(X, Y, kendall, kendall_X, kendall_Y, bandwidth = "Dehling")
   G_XY <- Vectorize(function(x_val, y_val) (mean(X <= x_val & Y <= y_val) + mean(X <= x_val & Y < y_val) + mean(X < x_val & Y <= y_val) + mean(X < x_val & Y < y_val)) / 4)
   G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
   G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
-  x_eq <- Vectorize(function(x_val) mean(X == x_val))
-  y_eq <- Vectorize(function(y_val) mean(Y == y_val))
+  x_neq <- Vectorize(function(x_val) mean(X != x_val))
+  y_neq <- Vectorize(function(y_val) mean(Y != y_val))
 
   # Define kernel realizations
   k_XY_tau <- 4 * G_XY(X, Y) - 2 * (G_X(X) + G_Y(Y)) + 1 - kendall
-  k_X_tau <- 1 - x_eq(X) - kendall_X
-  k_Y_tau <- 1 - y_eq(Y) - kendall_Y
+  k_X_tau <- x_neq(X) - kendall_X
+  k_Y_tau <- y_neq(Y) - kendall_Y
 
   # Calculate autocovariances in a vector with row = lag
   k_XY_tau_autoc <- (n - 1) / n * acf(k_XY_tau, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_XY_tau has mean 0. Therefore, demean = FALSE
