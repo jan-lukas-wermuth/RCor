@@ -41,13 +41,13 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
       var_hat <- 4 * mean((4 * G_XY(X, Y) - 2 * (G_X(X) + G_Y(Y)) + 1 - tau)^2)
       # Variance under independence assumption
       var_hat_ind <- 4/9 * (1 - X_TieProb3) * (1 - Y_TieProb3)
-      p_val_ind <- stats::pnorm(-abs(sqrt(n) * tau / sqrt(var_hat_ind)))
-      p_val <- stats::pnorm(-abs(sqrt(n) * tau / sqrt(var_hat)))
+      p_val_ind <- stats::pnorm(-abs(sqrt(n) * tau / sqrt(var_hat_ind))) * 2
+      p_val <- stats::pnorm(-abs(sqrt(n) * tau / sqrt(var_hat))) * 2
     } else if (isFALSE(IID)){
       var_hat <- Tau_LRV(X, Y, tau)
       var_hat_ind <- Tau_ind_LRV(X, Y, bandwidth = "Dehling")
-      p_val_ind <- stats::pnorm(-abs(sqrt(n) * tau / sqrt(var_hat_ind)))
-      p_val <- stats::pnorm(-abs(sqrt(n) * tau / sqrt(var_hat)))
+      p_val_ind <- stats::pnorm(-abs(sqrt(n) * tau / sqrt(var_hat_ind))) * 2
+      p_val <- stats::pnorm(-abs(sqrt(n) * tau / sqrt(var_hat))) * 2
     } else stop("Please insert a valid option for the variable `IID`!", call. = FALSE)
     if (isFALSE(Fisher)){
       CI <- c(tau + stats::qnorm(alpha/2)*sqrt(var_hat)/sqrt(n), tau + stats::qnorm(1 - alpha/2)*sqrt(var_hat)/sqrt(n))
@@ -94,8 +94,8 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
       var_hat <- (var_tau - tau * (var_tautaux / taux - var_tautauy / tauy) + tau^2 / 4 * (var_taux / taux^2 + var_tauy / tauy^2 + (2 * var_tauxtauy) / tauy / taux)) / (taux * tauy)
       # Variance under independence assumption
       var_hat_ind <- 4 / 9 * (1 - X_TieProb3) * (1 - Y_TieProb3) / (1 - X_TieProb) / (1 - Y_TieProb)
-      p_val_ind <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat_ind)))
-      p_val <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat)))
+      p_val_ind <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat_ind))) * 2
+      p_val <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat))) * 2
     } else if (isFALSE(IID)){
       tau_info <- DescTools:::.DoCount(X, Y)
       tau <- (tau_info$C - tau_info$D) / choose(n, 2)
@@ -107,8 +107,8 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
       Y_TieProb <- sum((table(Y)/length(Y))^2)
       var_hat <- TauB_LRV(X, Y, tau, taux, tauy, bandwidth = "Dehling")
       var_hat_ind <- Tau_ind_LRV(X, Y, bandwidth = "Dehling") / (1 - X_TieProb) / (1 - Y_TieProb)
-      p_val_ind <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat_ind)))
-      p_val <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat)))
+      p_val_ind <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat_ind))) * 2
+      p_val <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat))) * 2
     } else stop("Please insert a valid option for the variable `IID`!", call. = FALSE)
     if (isFALSE(Fisher)){
       CI <- c(tau_b + stats::qnorm(alpha/2)*sqrt(var_hat)/sqrt(n), tau_b + stats::qnorm(1 - alpha/2)*sqrt(var_hat)/sqrt(n))
@@ -137,7 +137,7 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
     tau_b_mod <- tau / sqrt((1 - ties_x) * (1 - ties_y))
     if (isTRUE(IID)){
       var_hat_ind <- 4/9
-      p_val_ind <- stats::pnorm(-abs(sqrt(n) * tau_b_mod / sqrt(var_hat_ind)))
+      p_val_ind <- stats::pnorm(-abs(sqrt(n) * tau_b_mod / sqrt(var_hat_ind))) * 2
     } else stop("Please insert a valid option for the variable `IID`!", call. = FALSE)
     res <- dplyr::tribble(~TauB_Mod, ~PValueIND,
                           tau_b_mod, p_val_ind)
@@ -175,13 +175,13 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
       var_hat <- (var_tau + gamma^2 * var_nu + 2 * gamma * var_taunu) / (1 - tie_prob)^2
       # Variance under independence assumption
       var_hat_ind <- 4 / 9 * (1 - X_TieProb3) * (1 - Y_TieProb3) / (1 - X_TieProb)^2 / (1 - Y_TieProb)^2
-      p_val_ind <- stats::pnorm(-abs(sqrt(n) * gamma / sqrt(var_hat_ind)))
-      p_val <- stats::pnorm(-abs(sqrt(n) * gamma / sqrt(var_hat)))
+      p_val_ind <- stats::pnorm(-abs(sqrt(n) * gamma / sqrt(var_hat_ind))) * 2
+      p_val <- stats::pnorm(-abs(sqrt(n) * gamma / sqrt(var_hat))) * 2
     } else if (isFALSE(IID)){
       var_hat <- Gamma_LRV(X, Y, tau, tie_prob, bandwidth = "Dehling")
       var_hat_ind <- Tau_ind_LRV(X, Y, bandwidth = "Dehling") / (1 - X_TieProb)^2 / (1 - Y_TieProb)^2
-      p_val_ind <- stats::pnorm(-abs(sqrt(n) * gamma / sqrt(var_hat_ind)))
-      p_val <- stats::pnorm(-abs(sqrt(n) * gamma / sqrt(var_hat)))
+      p_val_ind <- stats::pnorm(-abs(sqrt(n) * gamma / sqrt(var_hat_ind))) * 2
+      p_val <- stats::pnorm(-abs(sqrt(n) * gamma / sqrt(var_hat))) * 2
     } else stop("Please insert a valid option for the variable `IID`!", call. = FALSE)
     if (isFALSE(Fisher)){
       CI <- c(gamma + stats::qnorm(alpha/2)*sqrt(var_hat)/sqrt(n), gamma + stats::qnorm(1 - alpha/2)*sqrt(var_hat)/sqrt(n))
@@ -211,13 +211,13 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
       var_hat <- 9 * mean((4 * (g_x(X) + g_y(Y) + G_XX * G_YY - G_XX - G_YY)  + 1 - rho)^2)
       # Variance under independence assumption
       var_hat_ind <- (1 - X_TieProb3) * (1 - Y_TieProb3)
-      p_val_ind <- stats::pnorm(-abs(sqrt(n) * rho / sqrt(var_hat_ind)))
-      p_val <- stats::pnorm(-abs(sqrt(n) * rho / sqrt(var_hat)))
+      p_val_ind <- stats::pnorm(-abs(sqrt(n) * rho / sqrt(var_hat_ind))) * 2
+      p_val <- stats::pnorm(-abs(sqrt(n) * rho / sqrt(var_hat))) * 2
     } else if (isFALSE(IID)){
       var_hat <- SRho_LRV(X, Y, rho, bandwidth = "Dehling")
       var_hat_ind <- 9 / 4 * Tau_ind_LRV(X, Y, bandwidth = "Dehling")
-      p_val_ind <- stats::pnorm(-abs(sqrt(n) * rho / sqrt(var_hat_ind)))
-      p_val <- stats::pnorm(-abs(sqrt(n) * rho / sqrt(var_hat)))
+      p_val_ind <- stats::pnorm(-abs(sqrt(n) * rho / sqrt(var_hat_ind))) * 2
+      p_val <- stats::pnorm(-abs(sqrt(n) * rho / sqrt(var_hat))) * 2
     } else stop("Please insert a valid option for the variable `IID`!", call. = FALSE)
     if (isFALSE(Fisher)){
       CI <- c(rho + stats::qnorm(alpha/2)*sqrt(var_hat)/sqrt(n), rho + stats::qnorm(1 - alpha/2)*sqrt(var_hat)/sqrt(n))
@@ -286,13 +286,13 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
       var_hat <- (var_rho - rho * (var_rhorhox / rho_x + var_rhorhoy / rho_y) + 0.25 * rho^2 * (var_rhox / rho_x^2 + var_rhoy / rho_y^2 + 2 * var_rhoxrhoy / (rho_x * rho_y))) / (rho_x * rho_y)
       # Variance under independence assumption
       var_hat_ind <- 1
-      p_val_ind <- stats::pnorm(-abs(sqrt(n) * rho_b / sqrt(var_hat_ind)))
-      p_val <- stats::pnorm(-abs(sqrt(n) * rho_b / sqrt(var_hat)))
+      p_val_ind <- stats::pnorm(-abs(sqrt(n) * rho_b / sqrt(var_hat_ind))) * 2
+      p_val <- stats::pnorm(-abs(sqrt(n) * rho_b / sqrt(var_hat))) * 2
     } else if (isFALSE(IID)){
       var_hat <- Rhob_LRV(X, Y, rho, rho_x, rho_y, bandwidth = "Dehling")
       var_hat_ind <- Rhob_ind_LRV(X, Y, bandwidth = "Dehling")
-      p_val_ind <- stats::pnorm(-abs(sqrt(n) * rho_b / sqrt(var_hat_ind)))
-      p_val <- stats::pnorm(-abs(sqrt(n) * rho_b / sqrt(var_hat)))
+      p_val_ind <- stats::pnorm(-abs(sqrt(n) * rho_b / sqrt(var_hat_ind))) * 2
+      p_val <- stats::pnorm(-abs(sqrt(n) * rho_b / sqrt(var_hat))) * 2
     } else stop("Please insert a valid option for the variable `IID`!", call. = FALSE)
     if (isFALSE(Fisher)){
       CI <- c(rho_b + stats::qnorm(alpha/2)*sqrt(var_hat)/sqrt(n), rho_b + stats::qnorm(1 - alpha/2)*sqrt(var_hat)/sqrt(n))
@@ -318,13 +318,13 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
       var_hat <- 0.25 * ((m_40 + 2*m_22 + m_04)*r^2 - 4*r*(m_31 + m_13) + 4*m_22)
       # Variance under independence assumption
       var_hat_ind <- 1
-      p_val_ind <- stats::pnorm(-abs(sqrt(n) * r / sqrt(var_hat_ind)))
-      p_val <- stats::pnorm(-abs(sqrt(n) * r / sqrt(var_hat)))
+      p_val_ind <- stats::pnorm(-abs(sqrt(n) * r / sqrt(var_hat_ind))) * 2
+      p_val <- stats::pnorm(-abs(sqrt(n) * r / sqrt(var_hat))) * 2
     } else if (isFALSE(IID)){
       var_hat <- Rho_LRV(X, Y)
       var_hat_ind <- Rho_ind_LRV(X, Y, bandwidth = "Dehling")
-      p_val_ind <- stats::pnorm(-abs(sqrt(n) * r / sqrt(var_hat_ind)))
-      p_val <- stats::pnorm(-abs(sqrt(n) * r / sqrt(var_hat)))
+      p_val_ind <- stats::pnorm(-abs(sqrt(n) * r / sqrt(var_hat_ind))) * 2
+      p_val <- stats::pnorm(-abs(sqrt(n) * r / sqrt(var_hat))) * 2
     } else stop("Please insert a valid option for the variable `IID`!", call. = FALSE)
     if (isFALSE(Fisher)){
       CI <- c(r + stats::qnorm(alpha/2)*sqrt(var_hat)/sqrt(n), r + stats::qnorm(1 - alpha/2)*sqrt(var_hat)/sqrt(n))
