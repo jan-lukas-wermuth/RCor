@@ -7,7 +7,8 @@
 #' @param alpha a numeric value specifying the significance level. The confidence level will be 1 - alpha.
 #' @param method a character string specifying the correlation coefficient to be used for the independence test. Possible values are "tau", "tau_b", "tau_b_mod", "gamma", "rho", "rho_b" and "r". The recommendation for data with ties is "gamma". Specifying "tau_b_mod" only yields the independence test for IID data.
 #' @param IID logical indicator determining whether the inference shall be conducted under iid (default) or time series assumptions (see CITATION for a precise description of the assumptions)
-#' @param Fisher logical indicator determining whether the CIs shall be computed by using the Fisher transformation.
+#' @param Fisher logical indicator determining whether the confidence interval shall be computed by using the Fisher transformation.
+#' @param Inference logical indicator determining whether a confidence interval and an independence test shall be computed.
 
 #' @return The value of the chosen correlation coefficient along with its confidence interval and an independence test as well as an uncorrelatedness test.
 #' @export
@@ -20,7 +21,7 @@
 #' X <- c(1, 2, 3, 4, 5, 6, 7, 8, 9)
 #' Y <- c(1, 1, 1, 1, 2, 1, 2, 2, 2)
 #' RCor(X, Y)
-RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE){
+RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE, Inference = TRUE){
   if (!(is.numeric(X) && is.numeric(Y) && length(X) == length(Y))){
     stop("`X` and `Y` must be numeric vectors of the same length", call. = FALSE)
   }
@@ -28,6 +29,10 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
   if (method == "tau"){
     tau_info <- DescTools:::.DoCount(X, Y)
     tau <- (tau_info$C - tau_info$D) / choose(n, 2)
+    if (isFALSE(Inference)){
+      res <- dplyr::tribble(~Tau, tau)
+      return(res)
+    }
     tau_fis <- atanh(tau)
     X_TieProb3 <- sum((table(X)/length(X))^3)
     Y_TieProb3 <- sum((table(Y)/length(Y))^3)
@@ -60,6 +65,10 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
   }
   if (method == "tau_b"){
     tau_b <- stats::cor(X, Y, method = "kendall")
+    if (isFALSE(Inference)){
+      res <- dplyr::tribble(~Tau_b, tau_b)
+      return(res)
+    }
     tau_b_fis <- atanh(tau_b)
     if (isTRUE(IID)){
       tau_info <- DescTools:::.DoCount(X, Y)
@@ -146,6 +155,10 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
   if (method == "gamma"){
     gamma_info <- DescTools:::.DoCount(X, Y)
     gamma <- (gamma_info$C - gamma_info$D) / (gamma_info$C + gamma_info$D)
+    if (isFALSE(Inference)){
+      res <- dplyr::tribble(~Gamma, gamma)
+      return(res)
+    }
     gamma_fis <- atanh(gamma)
     tau <- (gamma_info$C - gamma_info$D) / choose(n, 2)
     X_TieProb <- sum((table(X)/length(X))^2)
@@ -194,6 +207,10 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
   }
   if (method == "rho"){
     rho <- 12 * (n - 1) / n^3 * stats::cov(X, Y, method = "spearman")
+    if (isFALSE(Inference)){
+      res <- dplyr::tribble(~Rho, rho)
+      return(res)
+    }
     rho_fis <- atanh(rho)
     X_TieProb3 <- sum((table(X)/length(X))^3)
     Y_TieProb3 <- sum((table(Y)/length(Y))^3)
@@ -230,6 +247,10 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
   }
   if (method == "rho_b"){
     rho_b <- stats::cor(X, Y, method = "spearman")
+    if (isFALSE(Inference)){
+      res <- dplyr::tribble(~Rho_b, rho_b)
+      return(res)
+    }
     rho_b_fis <- atanh(rho_b)
     rho <- 12 * (n - 1) / n^3 * stats::cov(X, Y, method = "spearman")
     rho_x <- 12 * (n - 1) / n^3 * stats::cov(X, X, method = "spearman")
@@ -305,6 +326,10 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
   }
   if (method == "r"){
     r <- stats::cor(X, Y)
+    if (isFALSE(Inference)){
+      res <- dplyr::tribble(~R, r)
+      return(res)
+    }
     r_fis <- atanh(r)
     X_std <- scale(X)
     Y_std <- scale(Y)
