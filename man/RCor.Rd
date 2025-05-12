@@ -4,7 +4,15 @@
 \alias{RCor}
 \title{Kendall, Spearman and Pearson correlation and their generalizations for non-continuous data}
 \usage{
-RCor(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
+RCor(
+  X,
+  Y,
+  alpha = 0.1,
+  method = "gamma",
+  IID = TRUE,
+  Fisher = TRUE,
+  Inference = TRUE
+)
 }
 \arguments{
 \item{X}{a n x 1 numeric vector, matrix or data frame.}
@@ -17,7 +25,9 @@ RCor(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE)
 
 \item{IID}{logical indicator determining whether the inference shall be conducted under iid (default) or time series assumptions (see CITATION for a precise description of the assumptions)}
 
-\item{Fisher}{logical indicator determining whether the CIs shall be computed by using the Fisher transformation.}
+\item{Fisher}{logical indicator determining whether the confidence interval shall be computed by using the Fisher transformation.}
+
+\item{Inference}{logical indicator determining whether a confidence interval and an independence test shall be computed.}
 }
 \value{
 The value of the chosen correlation coefficient along with its confidence interval and an independence test as well as an uncorrelatedness test.
