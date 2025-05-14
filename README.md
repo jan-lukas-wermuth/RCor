@@ -1,0 +1,131 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# R package RCor
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+## Overview
+
+This package accompanies the paper “Statistical Inference for Rank
+Correlations” by Marc-Oliver Pohle, Jan-Lukas Wermuth and Christian H.
+Weiß.
+
+It provides a comprehensive alternative to the `cor.test()` function
+from the `stats` package and only consists of one function: `RCor()`.
+This function returns an estimate as well as asymptotically valid
+confidence intervals for Pearson’s $r$, Kendall’s $\tau$, Kendall’s
+$\tau_b$, Goodman-Kruskal’s $\gamma$, Spearman’s $\rho$ and Spearman’s
+$\rho_b$. Additionally, p-values for the related independence
+(uncorrelatedness) tests are provided based on the asymptotic variance
+under independence and based on the asymptotic variance without
+independence assumption. All the inferential results are valid under iid
+or under classical time series assumptions and do not hinge on any
+normality or continuity assumptions.
+
+## Installation
+
+You can install the development version of RCor from
+[GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+library(devtools)
+devtools::install_github("jan-lukas-wermuth/RCor")
+library(RCor)
+```
+
+## Examples
+
+The first example stems from Table 1 in Holgate (1966) and concerns the
+numbers of two plants in 100 contiguous quadrats. The data can be
+considered as iid due to the experimental design.
+
+``` r
+# Load data
+Y <- c(rep(0,34),rep(0,12),rep(0,4),rep(0,5),rep(0,2),rep(1,8),rep(1,13),rep(1,3),rep(1,3),rep(2,3),rep(2,6),rep(2,1),rep(2,2),rep(3,1),rep(3,1),rep(3,1),0)
+X <- c(rep(0,34),rep(1,12),rep(2,4),rep(3,5),rep(4,2),rep(0,8),rep(1,13),rep(2,3),rep(3,3),rep(0,3),rep(1,6),rep(2,1),rep(3,2),rep(0,1),rep(1,1),rep(3,1),6)
+
+# Compute coefficients, confidence intervals and p-values
+methods <- c("gamma", "tau","tau_b", "rho_b", "r")
+for(i in methods){
+  print(RCor::RCor(X, Y, alpha=0.1, method=i, IID=TRUE, Fisher=TRUE, Inference=TRUE))
+}
+#> # A tibble: 1 × 5
+#>   Gamma CI_lower CI_upper PValue PValueIND
+#>   <dbl>    <dbl>    <dbl>  <dbl>     <dbl>
+#> 1 0.302   0.0782    0.497 0.0192    0.0351
+#> # A tibble: 1 × 5
+#>     Tau CI_lower CI_upper PValue PValueIND
+#>   <dbl>    <dbl>    <dbl>  <dbl>     <dbl>
+#> 1 0.124   0.0334    0.213 0.0232    0.0238
+#> # A tibble: 1 × 5
+#>    TauB CI_lower CI_upper PValue PValueIND
+#>   <dbl>    <dbl>    <dbl>  <dbl>     <dbl>
+#> 1 0.199   0.0480    0.340 0.0264    0.0253
+#> # A tibble: 1 × 5
+#>    RhoB CI_lower CI_upper PValue PValueIND
+#>   <dbl>    <dbl>    <dbl>  <dbl>     <dbl>
+#> 1 0.222   0.0555    0.376 0.0240    0.0266
+#> # A tibble: 1 × 5
+#>       R CI_lower CI_upper PValue PValueIND
+#>   <dbl>    <dbl>    <dbl>  <dbl>     <dbl>
+#> 1 0.114  -0.0549    0.277  0.262     0.254
+```
+
+A second example is based on Figure 1 in Pedeli and Karlis (2011) and
+contains the daily number of daytime and nighttime road accidents in the
+Schiphol area in the Netherlands. Because external conditions such as
+weather or holidays do not appear randomly in time, the data cannot be
+viewed as iid.
+
+``` r
+# load data
+X <- c(3,4,12,22,10,8,8,13,6,9,14,4,2,4,18,5,10,5,4,3,12,8,5,15,7,5,3,8,4,4,8,5,1,5,8,12,12,11,20,7,8,18,2,9,15,7,2,3,10,4,12,3,9,1,14,17,15,9,16,9,5,5,6,1,13,6,6,6,5,7,4,7,7,3,2,9,7,5,10,10,4,4,1,6,6,6,12,9,1,2,7,8,15,7,5,1,3,8,4,9,3,6,3,3,11,12,5,6,13,4,5,10,7,4,6,12,10,12,2,5,12,8,9,4,17,7,4,4,1,3,2,1,2,6,13,8,15,1,6,3,8,16,2,9,2,6,3,7,18,12,8,5,4,3,9,9,5,5,4,2,8,7,7,7,4,1,3,6,4,10,8,5,1,4,6,10,9,7,9,1,0,18,12,22,9,10,3,6,6,12,5,2,4,6,1,4,3,1,4,5,5,4,5,4,4,9,8,2,3,1,5,5,10,8,13,4,3,3,10,5,12,3,2,5,11,8,12,9,7,3,9,12,7,7,6,7,6,4,10,6,9,6,4,7,8,7,7,7,3,8,10,12,5,2,12,3,0,6,1,5,5,5,6,2,9,8,12,3,20,6,3,5,10,13,4,22,8,20,5,17,8,8,14,11,3,1,21,8,4,15,25,14,7,15,11,4,10,14,5,7,7,9,5,8,13,8,11,13,11,10,5,20,4,6,9,10,20,7,6,6,4,6,7,8,4,4,0,7,13,9,4,16,9,2,12,8,9,2,8,8,0,2,9,9,13,8,16,0,6,13,6,14,7,5,3,1,4,10,4,6,11,2,1,6,4)
+Y <- c(4,3,3,3,1,1,1,0,1,0,1,0,2,4,1,1,1,2,3,1,1,1,0,2,0,2,3,1,2,1,0,3,1,0,3,3,3,3,4,5,1,3,1,2,0,0,1,0,4,7,2,0,0,0,1,2,2,1,0,1,2,2,1,0,1,3,1,2,3,0,2,2,5,0,2,0,3,0,3,2,2,0,0,0,0,0,1,0,0,1,2,2,0,0,2,1,1,1,2,1,0,0,2,3,3,3,0,1,1,2,1,2,1,1,4,0,5,2,1,3,4,1,0,2,7,7,1,0,0,1,0,0,2,1,1,3,3,0,1,0,2,4,1,1,1,2,1,1,1,0,3,0,0,2,0,1,2,2,0,2,2,1,2,1,2,2,1,1,0,0,1,3,2,0,0,5,1,2,3,0,1,3,1,3,1,1,3,0,2,2,1,4,2,0,0,0,0,0,1,0,0,5,0,4,0,2,1,0,2,2,1,0,1,1,3,3,2,2,1,1,2,1,2,0,0,2,1,2,1,2,1,1,1,1,2,1,5,1,1,0,1,3,2,1,1,3,2,0,0,2,1,3,1,1,1,0,0,2,0,0,2,0,2,2,2,0,3,3,2,0,3,0,1,1,2,0,4,0,2,1,0,2,2,0,1,0,3,3,4,5,1,5,2,3,2,2,1,1,3,2,1,1,1,3,6,6,0,1,4,3,3,2,3,2,2,0,1,0,1,0,1,2,0,1,2,0,3,2,1,3,1,0,1,3,2,1,1,2,0,0,0,1,2,0,0,4,1,4,3,0,1,0,1,1,2,0,1,2,1,2,1,1,1,1,1)
+
+for(i in methods){
+  print(RCor::RCor(X, Y, alpha=0.1, method=i, IID=FALSE, Fisher=TRUE, Inference=TRUE))
+}
+#> # A tibble: 1 × 5
+#>   Gamma CI_lower CI_upper PValue PValueIND
+#>   <dbl>    <dbl>    <dbl>  <dbl>     <dbl>
+#> 1 0.113   0.0140    0.210 0.0584    0.0175
+#> # A tibble: 1 × 5
+#>      Tau CI_lower CI_upper PValue PValueIND
+#>    <dbl>    <dbl>    <dbl>  <dbl>     <dbl>
+#> 1 0.0808  0.00968    0.151 0.0606    0.0167
+#> # A tibble: 1 × 5
+#>     TauB CI_lower CI_upper PValue PValueIND
+#>    <dbl>    <dbl>    <dbl>  <dbl>     <dbl>
+#> 1 0.0956   0.0110    0.179 0.0617    0.0170
+#> # A tibble: 1 × 5
+#>    RhoB CI_lower CI_upper PValue PValueIND
+#>   <dbl>    <dbl>    <dbl>  <dbl>     <dbl>
+#> 1 0.125   0.0151    0.231 0.0588    0.0174
+#> # A tibble: 1 × 5
+#>       R CI_lower CI_upper PValue[,1] PValueIND
+#>   <dbl>    <dbl>    <dbl>      <dbl>     <dbl>
+#> 1 0.142   0.0393    0.243     0.0216   0.00707
+```
+
+## References
+
+<div id="refs" class="references csl-bib-body hanging-indent">
+
+<div id="ref-holgate66" class="csl-entry">
+
+Holgate, P. 1966. “Bivariate Generalizations of Neyman’s Type a
+Distribution.” *Biometrika* 53 (1–2): 241–91.
+
+</div>
+
+<div id="ref-pedeli11" class="csl-entry">
+
+Pedeli, Xanthi, and Dimitris Karlis. 2011. “A Bivariate INAR(1) Process
+with Application.” *Statistical Modelling* 11 (4): 325–49.
+
+</div>
+
+</div>

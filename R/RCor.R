@@ -1,6 +1,6 @@
 #' Kendall, Spearman and Pearson correlation and their generalizations for non-continuous data
 #'
-#' `RCor()` computes the specified correlation with corresponding confidence intervals and P-values for the associated independence test either in the iid or in the time series case.
+#' `RCor()` computes the specified correlation with corresponding confidence intervals and P-values for the associated independence or uncorrelatedness test either in the iid or in the time series case.
 #'
 #' @param X a n x 1 numeric vector, matrix or data frame.
 #' @param Y a n x 1 numeric vector, matrix or data frame.
@@ -9,7 +9,7 @@
 #' @param IID logical indicator determining whether the inference shall be conducted under iid (default) or time series assumptions (see CITATION for a precise description of the assumptions)
 #' @param Fisher logical indicator determining whether the confidence interval shall be computed by using the Fisher transformation.
 #' @param Inference logical indicator determining whether a confidence interval and an independence test shall be computed.
-
+#'
 #' @return The value of the chosen correlation coefficient along with its confidence interval and an independence test as well as an uncorrelatedness test.
 #' @export
 #'
