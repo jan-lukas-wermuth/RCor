@@ -1,16 +1,18 @@
 Package: RCor
-Title: What the Package Does (One Line, Title Case)
+Title: Asymptotic Inference for Rank Correlations
 Version: 0.0.0.9000
 Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"),
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+    person("Jan-Lukas", "Wermuth", , "wermuth@econ.uni-frankfurt.de", role = c("aut", "cre"))
+Description: This package provides estimators and confidence intervals for the classical rank correlations, Kendall's tau and Spearman's rho, as well as their discrete generalizations tau_b, gamma and rho_b. Additionally, independence tests based on these coefficients can be executed. Both methods of statistical inference can be applied under iid or time series assumptions as well as with or without continuity assumptions on the variables.
 License: MIT + file LICENSE
 Imports: 
     DescTools,
     stats,
     dplyr,
-    Matrix
+    Matrix,
+    Rdpack
+RdMacros:
+    Rdpack
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2

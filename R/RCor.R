@@ -1,12 +1,13 @@
 #' Kendall, Spearman and Pearson correlation and their generalizations for non-continuous data
 #'
-#' `RCor()` computes the specified correlation with corresponding confidence intervals and P-values for the associated independence or uncorrelatedness test either in the iid or in the time series case.
+#' `RCor()` computes the specified correlation with corresponding confidence intervals and p-values for the associated independence or uncorrelatedness test either in the iid or in the time series case.
 #'
 #' @param X a n x 1 numeric vector, matrix or data frame.
 #' @param Y a n x 1 numeric vector, matrix or data frame.
 #' @param alpha a numeric value specifying the significance level. The confidence level will be 1 - alpha.
 #' @param method a character string specifying the correlation coefficient to be used for the independence test. Possible values are "tau", "tau_b", "tau_b_mod", "gamma", "rho", "rho_b" and "r". The recommendation for data with ties is "gamma". Specifying "tau_b_mod" only yields the independence test for IID data.
 #' @param IID logical indicator determining whether the inference shall be conducted under iid (default) or time series assumptions (see CITATION for a precise description of the assumptions)
+#' @param discete logical indicator determining whether the independence test in the iid case shall be conducted under a discreteness (default) or continuity assumption.
 #' @param Fisher logical indicator determining whether the confidence interval shall be computed by using the Fisher transformation.
 #' @param Inference logical indicator determining whether a confidence interval and an independence test shall be computed.
 #'
@@ -17,11 +18,14 @@
 #' @import DescTools
 #' @import Matrix
 #' @import dplyr
+#'
+#' @references \insertRef{Goodman1954}{RCor}
+#'
 #' @examples
 #' X <- c(1, 2, 3, 4, 5, 6, 7, 8, 9)
 #' Y <- c(1, 1, 1, 1, 2, 1, 2, 2, 2)
 #' RCor(X, Y)
-RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE, Inference = TRUE){
+RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, discrete = TRUE, Fisher = TRUE, Inference = TRUE){
   if (!(is.numeric(X) && is.numeric(Y) && length(X) == length(Y))){
     stop("`X` and `Y` must be numeric vectors of the same length", call. = FALSE)
   }
@@ -45,7 +49,9 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE,
       # Calculate Marc's variance estimator
       var_hat <- 4 * mean((4 * G_XY(X, Y) - 2 * (G_X(X) + G_Y(Y)) + 1 - tau)^2)
       # Variance under independence assumption
-      var_hat_ind <- 4/9 * (1 - X_TieProb3) * (1 - Y_TieProb3)
+      if (isTRUE(discrete)){var_hat_ind <- 4/9 * (1 - X_TieProb3) * (1 - Y_TieProb3)}
+      else if (isFALSE(discrete)){var_hat_ind <- 4/9}
+      else stop("Please provide TRUE or FALSE for the variable discrete!")
       p_val_ind <- stats::pnorm(-abs(sqrt(n) * tau / sqrt(var_hat_ind))) * 2
       p_val <- stats::pnorm(-abs(sqrt(n) * tau / sqrt(var_hat))) * 2
     } else if (isFALSE(IID)){
@@ -102,7 +108,9 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE,
       var_tauxtauy <- 4 * mean((x_neqX - taux) * (y_neqY - tauy))
       var_hat <- (var_tau - tau * (var_tautaux / taux - var_tautauy / tauy) + tau^2 / 4 * (var_taux / taux^2 + var_tauy / tauy^2 + (2 * var_tauxtauy) / tauy / taux)) / (taux * tauy)
       # Variance under independence assumption
-      var_hat_ind <- 4 / 9 * (1 - X_TieProb3) * (1 - Y_TieProb3) / (1 - X_TieProb) / (1 - Y_TieProb)
+      if (isTRUE(discrete)){var_hat_ind <- 4 / 9 * (1 - X_TieProb3) * (1 - Y_TieProb3) / (1 - X_TieProb) / (1 - Y_TieProb)}
+      else if (isFALSE(discrete)){var_hat_ind <- 4/9}
+      else stop("Please provide TRUE or FALSE for the variable discrete!")
       p_val_ind <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat_ind))) * 2
       p_val <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat))) * 2
     } else if (isFALSE(IID)){
@@ -187,7 +195,9 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE,
       var_taunu <- 4 * mean((4 * G_XYXY - 2 * (G_XX + G_YY) + 1 - tau) * (x_eqX + y_eqY - x_eq_y_eqXY - tie_prob))
       var_hat <- (var_tau + gamma^2 * var_nu + 2 * gamma * var_taunu) / (1 - tie_prob)^2
       # Variance under independence assumption
-      var_hat_ind <- 4 / 9 * (1 - X_TieProb3) * (1 - Y_TieProb3) / (1 - X_TieProb)^2 / (1 - Y_TieProb)^2
+      if (isTRUE(discrete)){var_hat_ind <- 4 / 9 * (1 - X_TieProb3) * (1 - Y_TieProb3) / (1 - X_TieProb)^2 / (1 - Y_TieProb)^2}
+      else if (isFALSE(discrete)){var_hat_ind <- 4/9}
+      else stop("Please provide TRUE or FALSE for the variable discrete!")
       p_val_ind <- stats::pnorm(-abs(sqrt(n) * gamma / sqrt(var_hat_ind))) * 2
       p_val <- stats::pnorm(-abs(sqrt(n) * gamma / sqrt(var_hat))) * 2
     } else if (isFALSE(IID)){
@@ -227,7 +237,9 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE,
       G_YY <- G_Y(Y)
       var_hat <- 9 * mean((4 * (g_x(X) + g_y(Y) + G_XX * G_YY - G_XX - G_YY)  + 1 - rho)^2)
       # Variance under independence assumption
-      var_hat_ind <- (1 - X_TieProb3) * (1 - Y_TieProb3)
+      if (isTRUE(discrete)){var_hat_ind <- (1 - X_TieProb3) * (1 - Y_TieProb3)}
+      else if (isFALSE(discrete)){var_hat_ind <- 1}
+      else stop("Please provide TRUE or FALSE for the variable discrete!")
       p_val_ind <- stats::pnorm(-abs(sqrt(n) * rho / sqrt(var_hat_ind))) * 2
       p_val <- stats::pnorm(-abs(sqrt(n) * rho / sqrt(var_hat))) * 2
     } else if (isFALSE(IID)){
@@ -262,48 +274,23 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, Fisher = TRUE,
       G_XY <- Vectorize(function(x_val, y_val) (mean(X <= x_val & Y <= y_val) + mean(X <= x_val & Y < y_val) + mean(X < x_val & Y <= y_val) + mean(X < x_val & Y < y_val)) / 4)
       G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
       G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
-      F_X <- Vectorize(function(x_val) mean(X <= x_val))
-      F_X_ <- Vectorize(function(x_val) mean(X < x_val))
-      F_Y <- Vectorize(function(y_val) mean(Y <= y_val))
-      F_Y_ <- Vectorize(function(y_val) mean(Y < y_val))
       g_x <- Vectorize(function(x_val) mean(G_XY(x_val, Y)))
       g_y <- Vectorize(function(y_val) mean(G_XY(X, y_val)))
-
+      x_eq <- Vectorize(function(x_val) mean(X = x_val))
+      y_eq <- Vectorize(function(y_val) mean(Y = y_val))
       # Calculate Marc's variance estimator
       g_xX <- g_x(X)
       g_yY <- g_y(Y)
       G_XX <- G_X(X)
       G_YY <- G_Y(Y)
-      F_XX <- F_X(X)
-      F_X_X <- F_X_(X)
-      F_YY <- F_Y(Y)
-      F_Y_Y <- F_Y_(Y)
-
-      # Define functions
-      min1X <- Vectorize(function(x_val) mean(pmin(F_XX, F_X(x_val))))
-      min2X <- Vectorize(function(x_val) mean(pmin(F_XX, F_X_(x_val))))
-      min3X <- Vectorize(function(x_val) mean(pmin(F_X_X, F_X(x_val))))
-      min4X <- Vectorize(function(x_val) mean(pmin(F_X_X, F_X_(x_val))))
-      min1Y <- Vectorize(function(y_val) mean(pmin(F_YY, F_Y(y_val))))
-      min2Y <- Vectorize(function(y_val) mean(pmin(F_YY, F_Y_(y_val))))
-      min3Y <- Vectorize(function(y_val) mean(pmin(F_Y_Y, F_Y(y_val))))
-      min4Y <- Vectorize(function(y_val) mean(pmin(F_Y_Y, F_Y_(y_val))))
-
-      # Calculate min functions
-      min1XX <- min1X(X)
-      min2XX <- min2X(X)
-      min3XX <- min3X(X)
-      min4XX <- min4X(X)
-      min1YY <- min1Y(Y)
-      min2YY <- min2Y(Y)
-      min3YY <- min3Y(Y)
-      min4YY <- min4Y(Y)
+      x_eqX <- x_eq(X)
+      y_eqY <- y_eq(Y)
       var_rho <- 9 * mean((4 * (g_xX + g_yY + G_XX * G_YY - G_XX - G_YY)  + 1 - rho)^2)
-      var_rhox <- 9 * mean((2 * (min1XX + min2XX + min3XX + min4XX + 2 * G_XX^2 - 4 * G_XX) + 1 - rho_x)^2)
-      var_rhoy <- 9 * mean((2 * (min1YY + min2YY + min3YY + min4YY + 2 * G_YY^2 - 4 * G_YY) + 1 - rho_y)^2)
-      var_rhorhox <- 9 * mean((4 * (g_xX + g_yY + G_XX * G_YY - G_XX - G_YY)  + 1 - rho) * (2 * (min1XX + min2XX + min3XX + min4XX + 2 * G_XX^2 - 4 * G_XX) + 1 - rho_x))
-      var_rhorhoy <- 9 * mean((4 * (g_xX + g_yY + G_XX * G_YY - G_XX - G_YY)  + 1 - rho) * (2 * (min1YY + min2YY + min3YY + min4YY + 2 * G_YY^2 - 4 * G_YY) + 1 - rho_y))
-      var_rhoxrhoy <- 9 * mean((2 * (min1XX + min2XX + min3XX + min4XX + 2 * G_XX^2 - 4 * G_XX) + 1 - rho_x) * (2 * (min1YY + min2YY + min3YY + min4YY + 2 * G_YY^2 - 4 * G_YY) + 1 - rho_y))
+      var_rhox <- 4 * mean((1 - x_eqX^2 - rhox)^2)
+      var_rhoy <- 4 * mean((1 - y_eqY^2 - rhoy)^2)
+      var_rhorhox <- 9 * mean((4 * (g_xX + g_yY + G_XX * G_YY - G_XX - G_YY)  + 1 - rho) * (1 - x_eqX^2 - rhox))
+      var_rhorhoy <- 9 * mean((4 * (g_xX + g_yY + G_XX * G_YY - G_XX - G_YY)  + 1 - rho) * (1 - y_eqY^2 - rhoy))
+      var_rhoxrhoy <- 9 * mean((1 - x_eqX^2 - rhox) * (1 - y_eqY^2 - rhoy))
       var_hat <- (var_rho - rho * (var_rhorhox / rho_x + var_rhorhoy / rho_y) + 0.25 * rho^2 * (var_rhox / rho_x^2 + var_rhoy / rho_y^2 + 2 * var_rhoxrhoy / (rho_x * rho_y))) / (rho_x * rho_y)
       # Variance under independence assumption
       var_hat_ind <- 1
@@ -377,8 +364,8 @@ h <- 1:(n-1)
 w <- pmax(1 - abs(h) / (b + 1), 0)
 
 # Calculate autocovariances in a vector with row = lag
-x_autoc <- (n - 1) / n * stats::acf((rank(X) - 0.5) / n - 0.5, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # This is the acf of the demeaned grade. Therefore, demean = FALSE
-y_autoc <- (n - 1) / n * stats::acf((rank(Y) - 0.5) / n - 0.5, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # This is the acf of the demeaned grade. Therefore, demean = FALSE
+x_autoc <- stats::acf((rank(X) - 0.5) / n - 0.5, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # This is the acf of the demeaned grade. Therefore, demean = FALSE
+y_autoc <- stats::acf((rank(Y) - 0.5) / n - 0.5, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # This is the acf of the demeaned grade. Therefore, demean = FALSE
 
 # Calculate estimator of LRV for tau under independence
 Tau_ind_LRV <- 64 * sum(x_autoc[1] * y_autoc[1], 2 * (w * x_autoc[-1] * y_autoc[-1]))
@@ -457,7 +444,7 @@ Tau_LRV <- function(X, Y, kendall, bandwidth = "Dehling"){
   k_XY <- 4 * G_XY(X, Y) - 2 * (G_X(X) + G_Y(Y)) + 1 - kendall
 
   # Calculate autocovariances in a vector with row = lag
-  k_XY_autoc <- (n - 1) / n * stats::acf(k_XY, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_XY has mean 0. Therefore, demean = FALSE
+  k_XY_autoc <- stats::acf(k_XY, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_XY has mean 0. Therefore, demean = FALSE
 
   # Calculate estimator of LRV for tau
   Tau_LRV <- 4 * sum(k_XY_autoc[1], 2 * (w * k_XY_autoc[-1]))
@@ -485,21 +472,21 @@ Rho_LRV <- function(X, Y, bandwidth = "Dehling"){
   sigma_xy <- (n - 1) / n * cov(X, Y)
   var_x <- (n - 1) / n * var(X)
   var_y <- (n - 1) / n * var(Y)
-  x_autoc <- (n - 1) / n * acf(X, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
-  y_autoc <- (n - 1) / n * acf(Y, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
-  x2_autoc <- (n - 1) / n * acf(X^2, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
-  y2_autoc <- (n - 1) / n * acf(Y^2, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
-  xy_autoc <- (n - 1) / n * acf(X*Y, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
-  xy_crossc <- (n - 1) / n * ccf(X, Y, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
-  xx2_crossc <- (n - 1) / n * ccf(X, X^2, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
-  yx2_crossc <- (n - 1) / n * ccf(Y, X^2, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
-  xy2_crossc <- (n - 1) / n * ccf(X, Y^2, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
-  yy2_crossc <- (n - 1) / n * ccf(Y, Y^2, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
-  x2y2_crossc <- (n - 1) / n * ccf(X^2, Y^2, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
-  xxy_crossc <- (n - 1) / n * ccf(X, X*Y, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
-  yxy_crossc <- (n - 1) / n * ccf(Y, X*Y, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
-  x2xy_crossc <- (n - 1) / n * ccf(X^2, X*Y, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
-  y2xy_crossc <- (n - 1) / n * ccf(Y^2, X*Y, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
+  x_autoc <- acf(X, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
+  y_autoc <- acf(Y, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
+  x2_autoc <- acf(X^2, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
+  y2_autoc <- acf(Y^2, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
+  xy_autoc <- acf(X*Y, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
+  xy_crossc <- ccf(X, Y, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
+  xx2_crossc <- ccf(X, X^2, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
+  yx2_crossc <- ccf(Y, X^2, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
+  xy2_crossc <- ccf(X, Y^2, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
+  yy2_crossc <- ccf(Y, Y^2, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
+  x2y2_crossc <- ccf(X^2, Y^2, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
+  xxy_crossc <- ccf(X, X*Y, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
+  yxy_crossc <- ccf(Y, X*Y, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
+  x2xy_crossc <- ccf(X^2, X*Y, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
+  y2xy_crossc <- ccf(Y^2, X*Y, plot = FALSE, type = "covariance", demean = TRUE, lag.max = n - 1)$acf
 
   # Estimate Long-Run Variances
   x_LRVa <- sum(x_autoc[1], 2 * (w * x_autoc[-1]))
@@ -559,7 +546,7 @@ SRho_LRV <- function(X, Y, spearman, bandwidth = "Dehling"){
   k_XY <- 4 * (g_x(X) + g_y(Y) + G_XX * G_YY - G_XX - G_YY) + 1 - spearman
 
   # Calculate autocovariances in a vector with row = lag
-  k_XY_autoc <- (n - 1) / n * stats::acf(k_XY, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_XY has mean 0. Therefore, demean = FALSE
+  k_XY_autoc <- stats::acf(k_XY, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_XY has mean 0. Therefore, demean = FALSE
 
   # Calculate estimator of LRV for srho
   SRho_LRV <- 9 * sum(k_XY_autoc[1], 2 * (w * k_XY_autoc[-1]))
@@ -594,9 +581,9 @@ Gamma_LRV <- function(X, Y, kendall, tie_prob, bandwidth = "Dehling"){
   k_XY_tie <- x_eq(X) + y_eq(Y) - x_eq_y_eq(X, Y) - tie_prob
 
   # Calculate autocovariances in a vector with row = lag
-  k_XY_tau_autoc <- (n - 1) / n * stats::acf(k_XY_tau, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_XY_tau has mean 0. Therefore, demean = FALSE
-  k_XY_tie_autoc <- (n - 1) / n * stats::acf(k_XY_tie, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_XY_tie has mean 0. Therefore, demean = FALSE
-  k_XY_tautie_crossc <- (n - 1) / n * stats::ccf(k_XY_tau, k_XY_tie, plot = FALSE, type = "covariance", lag.max = n - 1)$acf
+  k_XY_tau_autoc <- stats::acf(k_XY_tau, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_XY_tau has mean 0. Therefore, demean = FALSE
+  k_XY_tie_autoc <- stats::acf(k_XY_tie, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_XY_tie has mean 0. Therefore, demean = FALSE
+  k_XY_tautie_crossc <- stats::ccf(k_XY_tau, k_XY_tie, plot = FALSE, type = "covariance", lag.max = n - 1)$acf
 
   # Calculate estimator of LRV for gamma
   sigma_tau_sq <- 4 * sum(k_XY_tau_autoc[1], 2 * (w * k_XY_tau_autoc[-1]))
@@ -636,12 +623,12 @@ TauB_LRV <- function(X, Y, kendall, kendall_X, kendall_Y, bandwidth = "Dehling")
   k_Y_tau <- y_neq(Y) - kendall_Y
 
   # Calculate autocovariances in a vector with row = lag
-  k_XY_tau_autoc <- (n - 1) / n * acf(k_XY_tau, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_XY_tau has mean 0. Therefore, demean = FALSE
-  k_X_tau_autoc <- (n - 1) / n * acf(k_X_tau, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_X_tau has mean 0. Therefore, demean = FALSE
-  k_Y_tau_autoc <- (n - 1) / n * acf(k_Y_tau, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_Y_tau has mean 0. Therefore, demean = FALSE
-  k_X_tau_crossc <- (n - 1) / n * ccf(k_XY_tau, k_X_tau, plot = FALSE, type = "covariance", lag.max = n - 1)$acf
-  k_Y_tau_crossc <- (n - 1) / n * ccf(k_XY_tau, k_Y_tau, plot = FALSE, type = "covariance", lag.max = n - 1)$acf
-  k_XY_tautau_crossc <- (n - 1) / n * ccf(k_X_tau, k_Y_tau, plot = FALSE, type = "covariance", lag.max = n - 1)$acf
+  k_XY_tau_autoc <- acf(k_XY_tau, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_XY_tau has mean 0. Therefore, demean = FALSE
+  k_X_tau_autoc <- acf(k_X_tau, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_X_tau has mean 0. Therefore, demean = FALSE
+  k_Y_tau_autoc <- acf(k_Y_tau, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_Y_tau has mean 0. Therefore, demean = FALSE
+  k_X_tau_crossc <- ccf(k_XY_tau, k_X_tau, plot = FALSE, type = "covariance", lag.max = n - 1)$acf
+  k_Y_tau_crossc <- ccf(k_XY_tau, k_Y_tau, plot = FALSE, type = "covariance", lag.max = n - 1)$acf
+  k_XY_tautau_crossc <- ccf(k_X_tau, k_Y_tau, plot = FALSE, type = "covariance", lag.max = n - 1)$acf
 
   # Calculate estimator of LRV for taub
   sigma_tau_sq <- 4 * sum(k_XY_tau_autoc[1], 2 * (w * k_XY_tau_autoc[-1]))
@@ -672,36 +659,26 @@ Rhob_LRV <- function(X, Y, spearman, spearman_X, spearman_Y, bandwidth = "Dehlin
   # Need to define helper functions
   G_XY <- Vectorize(function(x_val, y_val) (mean(X <= x_val & Y <= y_val) + mean(X <= x_val & Y < y_val) + mean(X < x_val & Y <= y_val) + mean(X < x_val & Y < y_val)) / 4)
   G_X <- Vectorize(function(x_val) (mean(X < x_val) + mean(X <= x_val)) / 2)
-  F_X <- Vectorize(function(x_val) mean(X <= x_val))
-  F_X_ <- Vectorize(function(x_val) mean(X < x_val))
   G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
-  F_Y <- Vectorize(function(y_val) mean(Y <= y_val))
-  F_Y_ <- Vectorize(function(y_val) mean(Y < y_val))
   g_x <- Vectorize(function(x_val) mean(G_XY(x_val, Y)))
   g_y <- Vectorize(function(y_val) mean(G_XY(X, y_val)))
-  f_x1 <- Vectorize(function(x_val) mean(pmin(F_X(x_val), F_X(X))))
-  f_x2 <- Vectorize(function(x_val) mean(pmin(F_X_(x_val), F_X(X))))
-  f_x3 <- Vectorize(function(x_val) mean(pmin(F_X(x_val), F_X_(X))))
-  f_x4 <- Vectorize(function(x_val) mean(pmin(F_X_(x_val), F_X_(X))))
-  f_y1 <- Vectorize(function(y_val) mean(pmin(F_Y(y_val), F_Y(Y))))
-  f_y2 <- Vectorize(function(y_val) mean(pmin(F_Y_(y_val), F_Y(Y))))
-  f_y3 <- Vectorize(function(y_val) mean(pmin(F_Y(y_val), F_Y_(Y))))
-  f_y4 <- Vectorize(function(y_val) mean(pmin(F_Y_(y_val), F_Y_(Y))))
+  x_eq <- Vectorize(function(x_val) mean(X = x_val))
+  y_eq <- Vectorize(function(y_val) mean(Y = y_val))
 
   # Define kernel realizations
   G_XX <- G_X(X)
   G_YY <- G_Y(Y)
   k_XY_rho <- 4 * (g_x(X) + g_y(Y) + G_XX * G_YY - G_XX - G_YY) + 1 - spearman
-  k_X_rho <- 2 * (f_x1(X) + f_x2(X) + f_x3(X) + f_x4(X) + 2 * G_XX^2 - 4 * G_XX) + 1 - spearman_X
-  k_Y_rho <- 2 * (f_y1(Y) + f_y2(Y) + f_y3(Y) + f_y4(Y) + 2 * G_YY^2 - 4 * G_YY) + 1 - spearman_Y
+  k_X_rho <- (1 - x_eqX^2 - spearman_X)
+  k_Y_rho <- (1 - y_eqY^2 - spearman_Y)
 
   # Calculate autocovariances in a vector with row = lag
-  k_XY_rho_autoc <- (n - 1) / n * acf(k_XY_rho, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_XY has mean 0. Therefore, demean = FALSE
-  k_X_rho_autoc <- (n - 1) / n * acf(k_X_rho, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_X_tie has mean 0. Therefore, demean = FALSE
-  k_Y_rho_autoc <- (n - 1) / n * acf(k_Y_rho, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_Y_tie has mean 0. Therefore, demean = FALSE
-  k_X_rho_crossc <- (n - 1) / n * ccf(k_XY_rho, k_X_rho, plot = FALSE, type = "covariance", lag.max = n - 1)$acf
-  k_Y_rho_crossc <- (n - 1) / n * ccf(k_XY_rho, k_Y_rho, plot = FALSE, type = "covariance", lag.max = n - 1)$acf
-  k_XY_rho_crossc <- (n - 1) / n * ccf(k_X_rho, k_Y_rho, plot = FALSE, type = "covariance", lag.max = n - 1)$acf
+  k_XY_rho_autoc <- acf(k_XY_rho, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_XY has mean 0. Therefore, demean = FALSE
+  k_X_rho_autoc <- acf(k_X_rho, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_X_tie has mean 0. Therefore, demean = FALSE
+  k_Y_rho_autoc <- acf(k_Y_rho, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_Y_tie has mean 0. Therefore, demean = FALSE
+  k_X_rho_crossc <- ccf(k_XY_rho, k_X_rho, plot = FALSE, type = "covariance", lag.max = n - 1)$acf
+  k_Y_rho_crossc <- ccf(k_XY_rho, k_Y_rho, plot = FALSE, type = "covariance", lag.max = n - 1)$acf
+  k_XY_rho_crossc <- ccf(k_X_rho, k_Y_rho, plot = FALSE, type = "covariance", lag.max = n - 1)$acf
 
   # Calculate estimator of LRV for srho
   sigma_rho_sq <- 9 * sum(k_XY_rho_autoc[1], 2 * (w * k_XY_rho_autoc[-1]))

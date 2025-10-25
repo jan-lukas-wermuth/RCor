@@ -33,10 +33,13 @@ RCor(
 The value of the chosen correlation coefficient along with its confidence interval and an independence test as well as an uncorrelatedness test.
 }
 \description{
-\code{RCor()} computes the specified correlation with corresponding confidence intervals and P-values for the associated independence test either in the iid or in the time series case.
+\code{RCor()} computes the specified correlation with corresponding confidence intervals and p-values for the associated independence or uncorrelatedness test either in the iid or in the time series case.
 }
 \examples{
 X <- c(1, 2, 3, 4, 5, 6, 7, 8, 9)
 Y <- c(1, 1, 1, 1, 2, 1, 2, 2, 2)
 RCor(X, Y)
+}
+\references{
+\insertRef{Goodman1954}{RCor}
 }
