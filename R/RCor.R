@@ -286,12 +286,12 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, discrete = TRU
       x_eqX <- x_eq(X)
       y_eqY <- y_eq(Y)
       var_rho <- 9 * mean((4 * (g_xX + g_yY + G_XX * G_YY - G_XX - G_YY)  + 1 - rho)^2)
-      var_rhox <- 4 * mean((1 - x_eqX^2 - rhox)^2)
-      var_rhoy <- 4 * mean((1 - y_eqY^2 - rhoy)^2)
-      var_rhorhox <- 9 * mean((4 * (g_xX + g_yY + G_XX * G_YY - G_XX - G_YY)  + 1 - rho) * (1 - x_eqX^2 - rhox))
-      var_rhorhoy <- 9 * mean((4 * (g_xX + g_yY + G_XX * G_YY - G_XX - G_YY)  + 1 - rho) * (1 - y_eqY^2 - rhoy))
-      var_rhoxrhoy <- 9 * mean((1 - x_eqX^2 - rhox) * (1 - y_eqY^2 - rhoy))
-      var_hat <- (var_rho - rho * (var_rhorhox / rho_x + var_rhorhoy / rho_y) + 0.25 * rho^2 * (var_rhox / rho_x^2 + var_rhoy / rho_y^2 + 2 * var_rhoxrhoy / (rho_x * rho_y))) / (rho_x * rho_y)
+      var_rho_x <- 4 * mean((1 - x_eqX^2 - rho_x)^2)
+      var_rho_y <- 4 * mean((1 - y_eqY^2 - rho_y)^2)
+      var_rhorho_x <- 9 * mean((4 * (g_xX + g_yY + G_XX * G_YY - G_XX - G_YY)  + 1 - rho) * (1 - x_eqX^2 - rho_x))
+      var_rhorho_y <- 9 * mean((4 * (g_xX + g_yY + G_XX * G_YY - G_XX - G_YY)  + 1 - rho) * (1 - y_eqY^2 - rho_y))
+      var_rho_xrho_y <- 9 * mean((1 - x_eqX^2 - rho_x) * (1 - y_eqY^2 - rho_y))
+      var_hat <- (var_rho - rho * (var_rhorho_x / rho_x + var_rhorho_y / rho_y) + 0.25 * rho^2 * (var_rho_x / rho_x^2 + var_rho_y / rho_y^2 + 2 * var_rho_xrho_y / (rho_x * rho_y))) / (rho_x * rho_y)
       # Variance under independence assumption
       var_hat_ind <- 1
       p_val_ind <- stats::pnorm(-abs(sqrt(n) * rho_b / sqrt(var_hat_ind))) * 2
