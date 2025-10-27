@@ -412,8 +412,8 @@ Rhob_ind_LRV <- function(X, Y, bandwidth = "Dehling"){
   w <- pmax(1 - abs(h) / (b + 1), 0)
 
   # Calculate autocovariances in a vector with row = lag
-  x_autoc <- stats::acf((rank(X) - 0.5) / n - 0.5, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf / stats::cov((rank(X) - 0.5) / n - 0.5, (rank(X) - 0.5) / n - 0.5) # This is the acf of the demeaned grade. Therefore, demean = FALSE
-  y_autoc <- stats::acf((rank(Y) - 0.5) / n - 0.5, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf / stats::cov((rank(Y) - 0.5) / n - 0.5, (rank(Y) - 0.5) / n - 0.5) # This is the acf of the demeaned grade. Therefore, demean = FALSE
+  x_autoc <- n / (n - 1) * stats::acf((rank(X) - 0.5) / n - 0.5, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf / stats::var((rank(X) - 0.5) / n - 0.5) # This is the acf of the demeaned grade. Therefore, demean = FALSE
+  y_autoc <- n / (n - 1) * stats::acf((rank(Y) - 0.5) / n - 0.5, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf / stats::var((rank(Y) - 0.5) / n - 0.5) # This is the acf of the demeaned grade. Therefore, demean = FALSE
 
   # Calculate estimator of LRV for rho_b under independence
   Rhob_ind_LRV <- sum(x_autoc[1] * y_autoc[1], 2 * (w * x_autoc[-1] * y_autoc[-1]))
