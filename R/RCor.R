@@ -276,8 +276,8 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, discrete = TRU
       G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
       g_x <- Vectorize(function(x_val) mean(G_XY(x_val, Y)))
       g_y <- Vectorize(function(y_val) mean(G_XY(X, y_val)))
-      x_eq <- Vectorize(function(x_val) mean(X = x_val))
-      y_eq <- Vectorize(function(y_val) mean(Y = y_val))
+      x_eq <- Vectorize(function(x_val) mean(X == x_val))
+      y_eq <- Vectorize(function(y_val) mean(Y == y_val))
       # Calculate Marc's variance estimator
       g_xX <- g_x(X)
       g_yY <- g_y(Y)
@@ -662,8 +662,8 @@ Rhob_LRV <- function(X, Y, spearman, spearman_X, spearman_Y, bandwidth = "Dehlin
   G_Y <- Vectorize(function(y_val) (mean(Y < y_val) + mean(Y <= y_val)) / 2)
   g_x <- Vectorize(function(x_val) mean(G_XY(x_val, Y)))
   g_y <- Vectorize(function(y_val) mean(G_XY(X, y_val)))
-  x_eq <- Vectorize(function(x_val) mean(X = x_val))
-  y_eq <- Vectorize(function(y_val) mean(Y = y_val))
+  x_eq <- Vectorize(function(x_val) mean(X == x_val))
+  y_eq <- Vectorize(function(y_val) mean(Y == y_val))
 
   # Define kernel realizations
   G_XX <- G_X(X)
