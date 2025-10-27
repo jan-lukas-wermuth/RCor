@@ -1,4 +1,4 @@
-#' Kendall, Spearman and Pearson correlation and their generalizations for non-continuous data
+#' Kendall, Spearman and Pearson correlation and their generalizations for discontinuous data
 #'
 #' `RCor()` computes the specified correlation with corresponding confidence intervals and p-values for the associated independence or uncorrelatedness test either in the iid or in the time series case.
 #'
@@ -7,7 +7,7 @@
 #' @param alpha a numeric value specifying the significance level. The confidence level will be 1 - alpha.
 #' @param method a character string specifying the correlation coefficient to be used for the independence test. Possible values are "tau", "tau_b", "tau_b_mod", "gamma", "rho", "rho_b" and "r". The recommendation for data with ties is "gamma". Specifying "tau_b_mod" only yields the independence test for IID data.
 #' @param IID logical indicator determining whether the inference shall be conducted under iid (default) or time series assumptions (see CITATION for a precise description of the assumptions)
-#' @param discete logical indicator determining whether the independence test in the iid case shall be conducted under a discreteness (default) or continuity assumption.
+#' @param discete logical indicator determining whether the independence test shall be conducted without (default) or with a continuity assumption. Assuming continuity simplifies formulas and removes bias but is not a necessary condition for an asymptotically valid p-value. The default delivers the latter irrespective of whether the data is assumed to be continuous or discontinuous.
 #' @param Fisher logical indicator determining whether the confidence interval shall be computed by using the Fisher transformation.
 #' @param Inference logical indicator determining whether a confidence interval and an independence test shall be computed.
 #'
@@ -123,7 +123,9 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, discrete = TRU
       X_TieProb <- sum((table(X)/length(X))^2)
       Y_TieProb <- sum((table(Y)/length(Y))^2)
       var_hat <- TauB_LRV(X, Y, tau, taux, tauy, bandwidth = "Dehling")
-      var_hat_ind <- Tau_ind_LRV(X, Y, bandwidth = "Dehling") / (1 - X_TieProb) / (1 - Y_TieProb)
+      if (isTRUE(discrete)){var_hat_ind <- Tau_ind_LRV(X, Y, bandwidth = "Dehling") / (1 - X_TieProb) / (1 - Y_TieProb)}
+      else if (isFALSE(discrete)){var_hat_ind <- Tau_ind_LRV(X, Y, bandwidth = "Dehling")}
+      else stop("Please provide TRUE or FALSE for the variable discrete!")
       p_val_ind <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat_ind))) * 2
       p_val <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat))) * 2
     } else stop("Please insert a valid option for the variable `IID`!", call. = FALSE)
@@ -202,7 +204,9 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, discrete = TRU
       p_val <- stats::pnorm(-abs(sqrt(n) * gamma / sqrt(var_hat))) * 2
     } else if (isFALSE(IID)){
       var_hat <- Gamma_LRV(X, Y, tau, tie_prob, bandwidth = "Dehling")
-      var_hat_ind <- Tau_ind_LRV(X, Y, bandwidth = "Dehling") / (1 - X_TieProb)^2 / (1 - Y_TieProb)^2
+      if (isTRUE(discrete)){var_hat_ind <- Tau_ind_LRV(X, Y, bandwidth = "Dehling") / (1 - X_TieProb)^2 / (1 - Y_TieProb)^2}
+      else if (isFALSE(discrete)){var_hat_ind <- Tau_ind_LRV(X, Y, bandwidth = "Dehling")}
+      else stop("Please provide TRUE or FALSE for the variable discrete!")
       p_val_ind <- stats::pnorm(-abs(sqrt(n) * gamma / sqrt(var_hat_ind))) * 2
       p_val <- stats::pnorm(-abs(sqrt(n) * gamma / sqrt(var_hat))) * 2
     } else stop("Please insert a valid option for the variable `IID`!", call. = FALSE)
@@ -669,8 +673,8 @@ Rhob_LRV <- function(X, Y, spearman, spearman_X, spearman_Y, bandwidth = "Dehlin
   G_XX <- G_X(X)
   G_YY <- G_Y(Y)
   k_XY_rho <- 4 * (g_x(X) + g_y(Y) + G_XX * G_YY - G_XX - G_YY) + 1 - spearman
-  k_X_rho <- (1 - x_eqX^2 - spearman_X)
-  k_Y_rho <- (1 - y_eqY^2 - spearman_Y)
+  k_X_rho <- (1 - x_eq(X)^2 - spearman_X)
+  k_Y_rho <- (1 - y_eq(Y)^2 - spearman_Y)
 
   # Calculate autocovariances in a vector with row = lag
   k_XY_rho_autoc <- acf(k_XY_rho, plot = FALSE, type = "covariance", demean = FALSE, lag.max = n - 1)$acf # k_XY has mean 0. Therefore, demean = FALSE
