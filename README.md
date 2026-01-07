@@ -8,9 +8,9 @@
 
 ## Overview
 
-This package accompanies the paper “Statistical Inference for Rank
-Correlations” by Marc-Oliver Pohle, Jan-Lukas Wermuth and Christian H.
-Weiß.
+This package accompanies the paper “[Asymptotic Inference for Rank
+Correlations](https://arxiv.org/abs/2512.14609)” by Marc-Oliver Pohle,
+Jan-Lukas Wermuth and Christian H. Weiß.
 
 It provides a comprehensive alternative to the `cor.test()` function
 from the `stats` package and only consists of one function: `RCor()`.
@@ -67,7 +67,7 @@ for(i in methods){
 #> # A tibble: 1 × 5
 #>    RhoB CI_lower CI_upper PValue PValueIND
 #>   <dbl>    <dbl>    <dbl>  <dbl>     <dbl>
-#> 1 0.222   0.0555    0.376 0.0240    0.0266
+#> 1 0.222   0.0557    0.376 0.0238    0.0266
 #> # A tibble: 1 × 5
 #>       R CI_lower CI_upper PValue PValueIND
 #>   <dbl>    <dbl>    <dbl>  <dbl>     <dbl>
@@ -91,23 +91,23 @@ for(i in methods){
 #> # A tibble: 1 × 5
 #>   Gamma CI_lower CI_upper PValue PValueIND
 #>   <dbl>    <dbl>    <dbl>  <dbl>     <dbl>
-#> 1 0.113   0.0140    0.210 0.0584    0.0175
+#> 1 0.113   0.0139    0.210 0.0588    0.0178
 #> # A tibble: 1 × 5
 #>      Tau CI_lower CI_upper PValue PValueIND
 #>    <dbl>    <dbl>    <dbl>  <dbl>     <dbl>
-#> 1 0.0808  0.00968    0.151 0.0606    0.0167
+#> 1 0.0808  0.00959    0.151 0.0610    0.0170
 #> # A tibble: 1 × 5
 #>     TauB CI_lower CI_upper PValue PValueIND
 #>    <dbl>    <dbl>    <dbl>  <dbl>     <dbl>
-#> 1 0.0956   0.0110    0.179 0.0617    0.0170
+#> 1 0.0956   0.0109    0.179 0.0620    0.0173
 #> # A tibble: 1 × 5
 #>    RhoB CI_lower CI_upper PValue PValueIND
 #>   <dbl>    <dbl>    <dbl>  <dbl>     <dbl>
-#> 1 0.125   0.0151    0.231 0.0588    0.0174
+#> 1 0.125   0.0150    0.232 0.0591    0.0177
 #> # A tibble: 1 × 5
 #>       R CI_lower CI_upper PValue[,1] PValueIND
 #>   <dbl>    <dbl>    <dbl>      <dbl>     <dbl>
-#> 1 0.142   0.0393    0.243     0.0216   0.00707
+#> 1 0.142   0.0392    0.243     0.0218   0.00707
 ```
 
 ## References
