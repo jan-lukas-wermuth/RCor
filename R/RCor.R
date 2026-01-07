@@ -7,7 +7,7 @@
 #' @param alpha a numeric value specifying the significance level. The confidence level will be 1 - alpha.
 #' @param method a character string specifying the correlation coefficient to be used for the independence test. Possible values are "tau", "tau_b", "tau_b_mod", "gamma", "rho", "rho_b" and "r". The recommendation for data with ties is "gamma". Specifying "tau_b_mod" only yields the independence test for IID data.
 #' @param IID logical indicator determining whether the inference shall be conducted under iid (default) or time series assumptions (see CITATION for a precise description of the assumptions)
-#' @param discete logical indicator determining whether the independence test shall be conducted without (default) or with a continuity assumption. Assuming continuity simplifies formulas and removes bias but is not a necessary condition for an asymptotically valid p-value. The default delivers the latter irrespective of whether the data is assumed to be continuous or discontinuous.
+#' @param discrete logical indicator determining whether the independence test shall be conducted without (default) or with a continuity assumption. Assuming continuity simplifies formulas and removes bias but is not a necessary condition for an asymptotically valid p-value. The default delivers the latter irrespective of whether the data is assumed to be continuous or discontinuous.
 #' @param Fisher logical indicator determining whether the confidence interval shall be computed by using the Fisher transformation.
 #' @param Inference logical indicator determining whether a confidence interval and an independence test shall be computed.
 #'

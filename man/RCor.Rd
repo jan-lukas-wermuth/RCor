@@ -2,7 +2,7 @@
 % Please edit documentation in R/RCor.R
 \name{RCor}
 \alias{RCor}
-\title{Kendall, Spearman and Pearson correlation and their generalizations for non-continuous data}
+\title{Kendall, Spearman and Pearson correlation and their generalizations for discontinuous data}
 \usage{
 RCor(
   X,
@@ -10,6 +10,7 @@ RCor(
   alpha = 0.1,
   method = "gamma",
   IID = TRUE,
+  discrete = TRUE,
   Fisher = TRUE,
   Inference = TRUE
 )
@@ -24,6 +25,8 @@ RCor(
 \item{method}{a character string specifying the correlation coefficient to be used for the independence test. Possible values are "tau", "tau_b", "tau_b_mod", "gamma", "rho", "rho_b" and "r". The recommendation for data with ties is "gamma". Specifying "tau_b_mod" only yields the independence test for IID data.}
 
 \item{IID}{logical indicator determining whether the inference shall be conducted under iid (default) or time series assumptions (see CITATION for a precise description of the assumptions)}
+
+\item{discrete}{logical indicator determining whether the independence test shall be conducted without (default) or with a continuity assumption. Assuming continuity simplifies formulas and removes bias but is not a necessary condition for an asymptotically valid p-value. The default delivers the latter irrespective of whether the data is assumed to be continuous or discontinuous.}
 
 \item{Fisher}{logical indicator determining whether the confidence interval shall be computed by using the Fisher transformation.}
 
