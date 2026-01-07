@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-This package accompanies the paper "Statistical Inference for Rank Correlations" by Marc-Oliver Pohle, Jan-Lukas Wermuth and Christian H. Weiß. 
+This package accompanies the paper "[Asymptotic Inference for Rank Correlations](https://arxiv.org/abs/2512.14609)" by Marc-Oliver Pohle, Jan-Lukas Wermuth and Christian H. Weiß. 
 
 It provides a comprehensive alternative to the `cor.test()` function from the `stats` package and only consists of one function: `RCor()`. This function returns an estimate as well as asymptotically valid confidence intervals for Pearson's $r$, Kendall's $\tau$, Kendall's $\tau_b$, Goodman-Kruskal's $\gamma$, Spearman's $\rho$ and Spearman's $\rho_b$. Additionally, p-values for the related independence (uncorrelatedness) tests are provided based on the asymptotic variance under independence and based on the asymptotic variance without independence assumption. All the inferential results are valid under iid or under classical time series assumptions and do not hinge on any normality or continuity assumptions. 
 
