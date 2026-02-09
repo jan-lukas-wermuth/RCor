@@ -14,13 +14,15 @@
 #' @return The value of the chosen correlation coefficient along with its confidence interval and an independence test as well as an uncorrelatedness test.
 #' @export
 #'
-#' @import stats
-#' @import DescTools
-#' @import Matrix
-#' @import dplyr
+#' @importFrom stats pnorm qnorm cor cov var acf ccf
+#' @importFrom Matrix forceSymmetric
+#' @importFrom DescTools BinTree
+#' @importFrom dplyr tribble
 #'
 #' @references \insertRef{Goodman1954}{RCor}
 #' @references \insertRef{pohle2025inference}{RCor}
+#'
+#' @useDynLib RCor, .registration = TRUE
 #'
 #' @examples
 #' X <- c(1, 2, 3, 4, 5, 6, 7, 8, 9)
@@ -32,7 +34,7 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, discrete = TRU
   }
   n <- length(X)
   if (method == "tau"){
-    tau_info <- DescTools:::.DoCount(X, Y)
+    tau_info <- DoCount(X, Y)
     tau <- (tau_info$C - tau_info$D) / choose(n, 2)
     if (isFALSE(Inference)){
       res <- dplyr::tribble(~Tau, tau)
@@ -78,11 +80,11 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, discrete = TRU
     }
     tau_b_fis <- atanh(tau_b)
     if (isTRUE(IID)){
-      tau_info <- DescTools:::.DoCount(X, Y)
+      tau_info <- DoCount(X, Y)
       tau <- (tau_info$C - tau_info$D) / choose(n, 2)
-      taux_info <- DescTools:::.DoCount(X, X)
+      taux_info <- DoCount(X, X)
       taux <- (taux_info$C - taux_info$D) / choose(n, 2)
-      tauy_info <- DescTools:::.DoCount(Y, Y)
+      tauy_info <- DoCount(Y, Y)
       tauy <- (tauy_info$C - tauy_info$D) / choose(n, 2)
       X_TieProb <- sum((table(X)/length(X))^2)
       Y_TieProb <- sum((table(Y)/length(Y))^2)
@@ -115,11 +117,11 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, discrete = TRU
       p_val_ind <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat_ind))) * 2
       p_val <- stats::pnorm(-abs(sqrt(n) * tau_b / sqrt(var_hat))) * 2
     } else if (isFALSE(IID)){
-      tau_info <- DescTools:::.DoCount(X, Y)
+      tau_info <- DoCount(X, Y)
       tau <- (tau_info$C - tau_info$D) / choose(n, 2)
-      taux_info <- DescTools:::.DoCount(X, X)
+      taux_info <- DoCount(X, X)
       taux <- (taux_info$C - taux_info$D) / choose(n, 2)
-      tauy_info <- DescTools:::.DoCount(Y, Y)
+      tauy_info <- DoCount(Y, Y)
       tauy <- (tauy_info$C - tauy_info$D) / choose(n, 2)
       X_TieProb <- sum((table(X)/length(X))^2)
       Y_TieProb <- sum((table(Y)/length(Y))^2)
@@ -152,7 +154,7 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, discrete = TRU
     }
     ties_x <- ties_x / choose(n, 3)
     ties_y <- ties_y / choose(n, 3)
-    tau_info <- DescTools:::.DoCount(X, Y)
+    tau_info <- DoCount(X, Y)
     tau <- (tau_info$C - tau_info$D) / choose(n, 2)
     tau_b_mod <- tau / sqrt((1 - ties_x) * (1 - ties_y))
     if (isTRUE(IID)){
@@ -164,7 +166,7 @@ RCor <- function(X, Y, alpha = 0.1, method = "gamma", IID = TRUE, discrete = TRU
     return(res)
   }
   if (method == "gamma"){
-    gamma_info <- DescTools:::.DoCount(X, Y)
+    gamma_info <- DoCount(X, Y)
     gamma <- (gamma_info$C - gamma_info$D) / (gamma_info$C + gamma_info$D)
     if (isFALSE(Inference)){
       res <- dplyr::tribble(~Gamma, gamma)
@@ -698,3 +700,18 @@ Rhob_LRV <- function(X, Y, spearman, spearman_X, spearman_Y, bandwidth = "Dehlin
   return(Rhob_LRV)
 }
 
+#' @keywords internal
+DoCount <- function (y, x, wts)
+{
+  if (missing(wts))
+    wts <- rep_len(1L, length(x))
+  ord <- order(y)
+  ux <- sort(unique(x))
+  n2 <- length(ux)
+  idx <- BinTree(n2)[match(x[ord], ux)] - 1L
+  y <- cbind(y, 1)
+  res <- .Call("conc", y[ord, ], as.double(wts[ord]),
+               as.integer(idx), as.integer(n2))
+  return(list(pi.c = NA, pi.d = NA, C = res[2], D = res[1],
+              T = res[3], N = res[4]))
+}
